@@ -3,6 +3,7 @@
 import { ErrorMessage } from "@/components/ErrorMessage";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { Button } from "@/components/ui/button";
+import { useGetProductsQuery } from "@/services/productApi";
 import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
 import { ProductCard } from "./components/ProductCard";
@@ -143,6 +144,9 @@ export const DUMMY_PRODUCTS: Product[] = [
 ];
 
 export default function ProductsPage() {
+  const { data: allProducts } = useGetProductsQuery();
+  console.log({ allProducts });
+
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
