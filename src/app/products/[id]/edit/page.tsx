@@ -56,7 +56,7 @@ export default function EditProductPage() {
 
   if (error || !product) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 py-10">
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 py-10 flex flex-col justify-center items-center w-full">
         <div className="container">
           <ErrorMessage message={error || "Product not found"} />
         </div>

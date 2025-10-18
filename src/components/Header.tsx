@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { Package, Plus, Sparkles } from 'lucide-react';
-import { Button } from './ui/button';
+import { Package, Plus, Sparkles } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Button } from "./ui/button";
 
 export function Header() {
   const pathname = usePathname();
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-white/80 backdrop-blur-xl supports-[backdrop-filter]:bg-white/80 shadow-sm">
+    <header className="sticky top-0 z-50 w-full border-b bg-white/80 backdrop-blur-xl supports-[backdrop-filter]:bg-white/80 shadow-sm flex flex-col justify-center items-center">
       <div className="container flex h-20 items-center justify-between">
         <Link
           href="/products"
@@ -24,12 +24,12 @@ export function Header() {
         <nav className="flex items-center gap-2">
           <Link href="/products">
             <Button
-              variant={pathname === '/products' ? 'default' : 'ghost'}
+              variant={pathname === "/products" ? "default" : "ghost"}
               size="lg"
               className={`font-semibold transition-all ${
-                pathname === '/products'
-                  ? 'bg-gradient-to-r from-accent to-primary shadow-md'
-                  : 'hover:bg-muted'
+                pathname === "/products"
+                  ? "bg-gradient-to-r from-accent to-primary shadow-md"
+                  : "hover:bg-muted"
               }`}
             >
               <Package className="mr-2 h-5 w-5" />
@@ -38,12 +38,12 @@ export function Header() {
           </Link>
           <Link href="/products/create">
             <Button
-              variant={pathname === '/products/create' ? 'default' : 'ghost'}
+              variant={pathname === "/products/create" ? "default" : "ghost"}
               size="lg"
               className={`font-semibold transition-all ${
-                pathname === '/products/create'
-                  ? 'bg-gradient-to-r from-accent to-primary shadow-md'
-                  : 'hover:bg-muted'
+                pathname === "/products/create"
+                  ? "bg-gradient-to-r from-accent to-primary shadow-md"
+                  : "hover:bg-muted"
               }`}
             >
               <Plus className="mr-2 h-5 w-5" />

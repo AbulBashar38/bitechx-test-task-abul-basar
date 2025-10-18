@@ -201,7 +201,7 @@ export default function ProductsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex flex-col justify-center items-center">
       <div className="container py-10">
         <div className="mb-10 animate-slide-up">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">

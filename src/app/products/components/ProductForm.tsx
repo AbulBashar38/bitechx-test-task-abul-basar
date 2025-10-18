@@ -158,7 +158,7 @@ export function ProductForm({ product, mode }: ProductFormProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 py-10">
+    <div className="flex flex-col justify-center items-center min-h-screen bg-gradient-to-br from-background via-background to-muted/20 py-10">
       <div className="container">
         <Card className="mx-auto max-w-3xl border-0 shadow-elegant-lg animate-scale-in">
           <CardHeader className="space-y-1 border-b bg-gradient-to-br from-accent/5 to-primary/5 pb-8">
