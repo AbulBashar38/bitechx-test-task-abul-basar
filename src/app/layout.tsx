@@ -1,3 +1,4 @@
+import StoreProvider from "@/provider/StoreProvider";
 import { ThemeProvider } from "@/provider/ThemeProvider";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
@@ -24,7 +25,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
@@ -33,7 +34,7 @@ export default function RootLayout({
           forcedTheme="light"
           disableTransitionOnChange
         >
-          {children}
+          <StoreProvider> {children}</StoreProvider>
         </ThemeProvider>
       </body>
     </html>
