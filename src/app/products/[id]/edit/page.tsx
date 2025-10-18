@@ -12,7 +12,7 @@ export default function EditProductPage() {
     data: product,
     isLoading,
     error,
-  } = useGetProductsBySlugQuery(params.id);
+  } = useGetProductsBySlugQuery(params.id as string);
 
   if (isLoading) {
     return (
@@ -26,7 +26,9 @@ export default function EditProductPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 py-10 flex flex-col justify-center items-center w-full">
         <div className="container">
-          <ErrorMessage message={error?.message || "Product not found"} />
+          <ErrorMessage
+            message={error ? "Failed to load product" : "Product not found"}
+          />
         </div>
       </div>
     );

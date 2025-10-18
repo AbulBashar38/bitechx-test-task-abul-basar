@@ -35,7 +35,7 @@ export default function ProductDetailsPage() {
     data: product,
     isLoading,
     error,
-  } = useGetProductsBySlugQuery(params.id);
+  } = useGetProductsBySlugQuery(params.id as string);
   console.log(product);
 
   const [deleteProduct, { isLoading: deleteLoading }] =
@@ -45,7 +45,7 @@ export default function ProductDetailsPage() {
     if (!product) return;
 
     try {
-      await deleteProduct({ id: product.id, body: product }).unwrap();
+      await deleteProduct(product.id).unwrap();
 
       toast.success("Product deleted successfully");
       setDeleteModalOpen(false);
@@ -65,10 +65,14 @@ export default function ProductDetailsPage() {
     );
   }
 
-  if (error) {
+  if (error || !product) {
     return (
       <div className="container py-8">
-        <ErrorMessage message="Failed to fetch product details" />
+        <ErrorMessage
+          message={
+            error ? "Failed to fetch product details" : "Product not found"
+          }
+        />
         <Link href="/products" className="mt-4 inline-block">
           <Button variant="outline">
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -97,7 +101,7 @@ export default function ProductDetailsPage() {
               <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-muted to-muted/50">
                 <Image
                   src={getValidImageUrl(product?.images?.[0])}
-                  alt={product?.name}
+                  alt={product?.name || "Product image"}
                   fill
                   className="object-cover transition-transform duration-500 hover:scale-105"
                   priority
@@ -199,14 +203,11 @@ export default function ProductDetailsPage() {
                       Created Date
                     </div>
                     <p className="text-sm text-foreground">
-                      {new Date(product.created_at).toLocaleDateString(
-                        "en-US",
-                        {
-                          month: "long",
-                          day: "numeric",
-                          year: "numeric",
-                        }
-                      )}
+                      {new Date(product.createdAt).toLocaleDateString("en-US", {
+                        month: "long",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
                     </p>
                   </div>
                   <div className="space-y-2">
@@ -215,14 +216,11 @@ export default function ProductDetailsPage() {
                       Last Updated
                     </div>
                     <p className="text-sm text-foreground">
-                      {new Date(product.updated_at).toLocaleDateString(
-                        "en-US",
-                        {
-                          month: "long",
-                          day: "numeric",
-                          year: "numeric",
-                        }
-                      )}
+                      {new Date(product.updatedAt).toLocaleDateString("en-US", {
+                        month: "long",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
                     </p>
                   </div>
                 </div>

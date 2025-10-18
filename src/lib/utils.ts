@@ -5,7 +5,8 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function getValidImageUrl(url: string): string {
+export function getValidImageUrl(url?: string): string {
+  if (!url) return "/placeholder.jpg";
   try {
     new URL(url);
     return url;

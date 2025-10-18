@@ -2,7 +2,6 @@
 
 import { ErrorMessage } from "@/components/ErrorMessage";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
-import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -15,8 +14,8 @@ import {
   useGetCategoriesQuery,
   useGetProductsQuery,
 } from "@/services/productApi";
-import { ChevronLeft, ChevronRight, Filter, Sparkles } from "lucide-react";
-import { useState } from "react";
+import { Filter, Sparkles } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ProductCard } from "./components/ProductCard";
 import { SearchBar } from "./components/SearchBar";
 
@@ -46,32 +45,70 @@ const ITEMS_PER_PAGE = 12;
 export default function ProductsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
 
   // Debounced search function
-  const debouncedSearch = useDebounce((query: string) => {
+  const searchFunction = (query: string) => {
     setSearchQuery(query);
-    setCurrentPage(1); // Reset to first page when searching
-  }, 500);
+    setPage(1); // Reset to first page when searching
+    setHasMore(true);
+  };
+  // @ts-expect-error TypeScript strictness with function parameter names
+  const debouncedSearch = useDebounce(searchFunction, 500);
 
-  const { data: categoryData, isLoading: categoryLoading } =
-    useGetCategoriesQuery({});
+  // Reset page and hasMore when category changes
+  useEffect(() => {
+    setPage(1);
+    setHasMore(true);
+  }, [selectedCategory, searchQuery]);
+
+  const categoryId = selectedCategory === "all" ? "" : selectedCategory;
+
+  const { data: categoryData } = useGetCategoriesQuery({});
 
   const {
     data: productsData,
     isLoading,
     error,
+    isFetching,
   } = useGetProductsQuery({
-    offset: (currentPage - 1) * ITEMS_PER_PAGE,
+    page,
     limit: ITEMS_PER_PAGE,
     searchedText: searchQuery,
-    categoryId: selectedCategory === "all" ? "" : selectedCategory,
+    categoryId: categoryId,
   });
   console.log(productsData);
 
-  const products = productsData || [];
+  const products = productsData?.products || [];
   const totalCount = productsData?.total || 0;
-  const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
+
+  const observer = useRef<IntersectionObserver | null>(null);
+
+  const lastProductElementRef = useCallback(
+    (node: HTMLDivElement) => {
+      if (isFetching) return;
+      if (observer.current) observer.current.disconnect();
+
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          setPage((prevPage) => prevPage + 1);
+        }
+      });
+
+      if (node) observer.current.observe(node);
+    },
+    [isFetching, hasMore]
+  );
+
+  useEffect(() => {
+    if (
+      productsData &&
+      productsData.products.length >= (productsData.total || 0)
+    ) {
+      setHasMore(false);
+    }
+  }, [productsData]);
 
   if (isLoading) {
     return (
@@ -160,6 +197,9 @@ export default function ProductsPage() {
               {products.map((product, index) => (
                 <div
                   key={product.id}
+                  ref={
+                    index === products.length - 1 ? lastProductElementRef : null
+                  }
                   style={{
                     animationDelay: `${index * 50}ms`,
                   }}
@@ -169,60 +209,17 @@ export default function ProductsPage() {
               ))}
             </div>
 
-            {totalPages > 1 && (
-              <div className="mt-12 flex items-center justify-center gap-3 animate-fade-in">
-                <Button
-                  variant="outline"
-                  size="lg"
-                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  disabled={currentPage === 1 || isLoading}
-                  className="font-semibold shadow-sm hover:shadow-md transition-all"
-                >
-                  <ChevronLeft className="mr-2 h-5 w-5" />
-                  Previous
-                </Button>
-                <div className="flex items-center gap-2">
-                  {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-                    let page: number;
-                    if (totalPages <= 5) {
-                      page = i + 1;
-                    } else if (currentPage <= 3) {
-                      page = i + 1;
-                    } else if (currentPage >= totalPages - 2) {
-                      page = totalPages - 4 + i;
-                    } else {
-                      page = currentPage - 2 + i;
-                    }
-                    return (
-                      <Button
-                        key={page}
-                        variant={currentPage === page ? "default" : "outline"}
-                        size="lg"
-                        onClick={() => setCurrentPage(page)}
-                        disabled={isLoading}
-                        className={`min-w-[3rem] font-semibold transition-all ${
-                          currentPage === page
-                            ? "bg-gradient-to-r from-accent to-primary shadow-md"
-                            : "shadow-sm hover:shadow-md"
-                        }`}
-                      >
-                        {page}
-                      </Button>
-                    );
-                  })}
-                </div>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  onClick={() =>
-                    setCurrentPage((p) => Math.min(totalPages, p + 1))
-                  }
-                  disabled={currentPage === totalPages || isLoading}
-                  className="font-semibold shadow-sm hover:shadow-md transition-all"
-                >
-                  Next
-                  <ChevronRight className="ml-2 h-5 w-5" />
-                </Button>
+            {/* Infinite scroll loading */}
+            {isFetching && hasMore && (
+              <div className="flex justify-center py-8">
+                <LoadingSpinner size={32} />
+              </div>
+            )}
+            {!hasMore && products.length > 0 && (
+              <div className="flex justify-center py-8">
+                <p className="text-muted-foreground">
+                  No more products to load
+                </p>
               </div>
             )}
           </>

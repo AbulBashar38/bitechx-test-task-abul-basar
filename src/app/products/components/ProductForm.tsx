@@ -235,7 +235,7 @@ export function ProductForm({ product, mode }: ProductFormProps) {
                       <SelectValue placeholder="Select a category" />
                     </SelectTrigger>
                     <SelectContent>
-                      {categories.map((category) => (
+                      {categories?.map((category) => (
                         <SelectItem
                           key={category.id}
                           value={category.id}

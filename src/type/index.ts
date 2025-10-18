@@ -37,3 +37,15 @@ export interface mutationQueryType {
   id: string;
   body: CreateProductPayload;
 }
+
+export interface ProductsResponse {
+  products: Product[];
+  total?: number;
+}
+
+export interface GetProductsArgs {
+  page?: number;
+  limit?: number;
+  searchedText?: string;
+  categoryId?: string;
+}
