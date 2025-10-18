@@ -104,7 +104,7 @@ export default function ProductsPage() {
   useEffect(() => {
     if (
       productsData &&
-      productsData.products.length >= (productsData.total || 0)
+      productsData.products?.length >= (productsData.total || 0)
     ) {
       setHasMore(false);
     }
@@ -177,7 +177,7 @@ export default function ProductsPage() {
           </div>
         </div>
 
-        {products.length === 0 ? (
+        {products?.length === 0 ? (
           <div className="flex min-h-[50vh] items-center justify-center rounded-3xl border-2 border-dashed border-muted bg-muted/5 animate-fade-in">
             <div className="text-center">
               <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-muted">
@@ -194,11 +194,13 @@ export default function ProductsPage() {
         ) : (
           <>
             <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {products.map((product, index) => (
+              {products?.map((product, index) => (
                 <div
                   key={product.id}
                   ref={
-                    index === products.length - 1 ? lastProductElementRef : null
+                    index === products?.length - 1
+                      ? lastProductElementRef
+                      : null
                   }
                   style={{
                     animationDelay: `${index * 50}ms`,
@@ -215,7 +217,7 @@ export default function ProductsPage() {
                 <LoadingSpinner size={32} />
               </div>
             )}
-            {!hasMore && products.length > 0 && (
+            {!hasMore && products?.length > 0 && (
               <div className="flex justify-center py-8">
                 <p className="text-muted-foreground">
                   No more products to load
