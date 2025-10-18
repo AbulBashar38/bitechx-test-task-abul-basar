@@ -4,10 +4,13 @@ const baseUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}`;
 
 const baseQuery = fetchBaseQuery({
   baseUrl,
-  prepareHeaders: (headers) => {
-    const token = localStorage.getItem("token");
+  prepareHeaders: (headers, { getState }) => {
+    // By using `getState`, you can access the entire Redux store's state
+    const token = (getState() as RootState).auth.token; // 👈 Get token from state
 
-    if (token) headers.set("authorization", `Bearer ${token}`);
+    if (token) {
+      headers.set("authorization", `Bearer ${token}`);
+    }
 
     return headers;
   },
@@ -16,6 +19,7 @@ const baseQuery = fetchBaseQuery({
 const apiConfig = createApi({
   reducerPath: "api",
   baseQuery: baseQuery,
+  tagTypes: ["product"], // It's good practice to define tagTypes here
   endpoints: () => ({}),
 });
 

@@ -7,7 +7,14 @@ const productApi = apiConfig.enhanceEndpoints({ addTagTypes }).injectEndpoints({
       query: () => ENDPOINT.PRODUCTS,
       providesTags: ["product"],
     }),
+    login: builder.mutation({
+      query: (body) => ({
+        url: ENDPOINT.AUTH,
+        method: "POST",
+        body,
+      }),
+    }),
   }),
 });
 
-export const { useGetProductsQuery } = productApi;
+export const { useGetProductsQuery, useLoginMutation } = productApi;
