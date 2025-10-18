@@ -38,11 +38,6 @@ export interface mutationQueryType {
   body: CreateProductPayload;
 }
 
-export interface ProductsResponse {
-  products: Product[];
-  total?: number;
-}
-
 export interface GetProductsArgs {
   page?: number;
   limit?: number;

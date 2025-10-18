@@ -44,6 +44,7 @@ const ITEMS_PER_PAGE = 12;
 
 export default function ProductsPage() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -80,8 +81,20 @@ export default function ProductsPage() {
   });
   console.log(productsData);
 
-  const products = productsData?.products || [];
-  const totalCount = productsData?.total || 0;
+  const products = productsData || [];
+  const totalCount = products.length;
+
+  const previousLength = useRef(0);
+
+  useEffect(() => {
+    if (!isFetching && previousLength.current !== products.length) {
+      const newCount = products.length - previousLength.current;
+      if (newCount < ITEMS_PER_PAGE) {
+        setHasMore(false);
+      }
+      previousLength.current = products.length;
+    }
+  }, [isFetching, products.length]);
 
   const observer = useRef<IntersectionObserver | null>(null);
 
@@ -100,15 +113,6 @@ export default function ProductsPage() {
     },
     [isFetching, hasMore]
   );
-
-  useEffect(() => {
-    if (
-      productsData &&
-      productsData.products?.length >= (productsData.total || 0)
-    ) {
-      setHasMore(false);
-    }
-  }, [productsData]);
 
   if (isLoading) {
     return (
@@ -150,8 +154,11 @@ export default function ProductsPage() {
 
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
               <SearchBar
-                value={searchQuery}
-                onChange={debouncedSearch}
+                value={search}
+                onChange={(value) => {
+                  setSearch(value);
+                  debouncedSearch(value);
+                }}
                 placeholder="Search products..."
               />
               <div className="flex items-center gap-2">
@@ -177,7 +184,7 @@ export default function ProductsPage() {
           </div>
         </div>
 
-        {products?.length === 0 ? (
+        {products.length === 0 ? (
           <div className="flex min-h-[50vh] items-center justify-center rounded-3xl border-2 border-dashed border-muted bg-muted/5 animate-fade-in">
             <div className="text-center">
               <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-muted">
@@ -194,13 +201,11 @@ export default function ProductsPage() {
         ) : (
           <>
             <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {products?.map((product, index) => (
+              {products.map((product, index) => (
                 <div
                   key={product.id}
                   ref={
-                    index === products?.length - 1
-                      ? lastProductElementRef
-                      : null
+                    index === products.length - 1 ? lastProductElementRef : null
                   }
                   style={{
                     animationDelay: `${index * 50}ms`,

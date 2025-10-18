@@ -4,7 +4,6 @@ import type {
   GetProductsArgs,
   mutationQueryType,
   Product,
-  ProductsResponse,
   QueryType,
 } from "@/type";
 import apiConfig from "./apiConfig";
@@ -14,7 +13,7 @@ const addTagTypes = ["product", "categories"];
 
 const productApi = apiConfig.enhanceEndpoints({ addTagTypes }).injectEndpoints({
   endpoints: (builder) => ({
-    getProducts: builder.query<ProductsResponse, GetProductsArgs>({
+    getProducts: builder.query<Product[], GetProductsArgs>({
       // 1. The query now accepts all parameters
       query: ({ page = 1, limit = 10, searchedText, categoryId }) => {
         const offset = (page - 1) * limit;
@@ -31,7 +30,9 @@ const productApi = apiConfig.enhanceEndpoints({ addTagTypes }).injectEndpoints({
           params.append("categoryId", categoryId);
         }
 
-        return `${ENDPOINT.PRODUCTS}?${params.toString()}`;
+        return `${ENDPOINT.PRODUCTS}${
+          searchedText?.length ? "/search?" : "?"
+        }${params.toString()}`;
       },
 
       // 2. THIS IS THE KEY CHANGE: Create a unique cache key for each filter combination
@@ -46,13 +47,13 @@ const productApi = apiConfig.enhanceEndpoints({ addTagTypes }).injectEndpoints({
       // 3. The merge logic remains the same
       merge: (currentCache, newItems) => {
         // Prevent duplicates in case of refetches
-        const uniqueNewItems = newItems.products.filter(
+        console.log({ newItems });
+
+        const uniqueNewItems = newItems.filter(
           (newItem) =>
-            !currentCache.products.some(
-              (existingItem) => existingItem.id === newItem.id
-            )
+            !currentCache.some((existingItem) => existingItem.id === newItem.id)
         );
-        currentCache.products.push(...uniqueNewItems);
+        currentCache.push(...uniqueNewItems);
       },
 
       // 4. Force refetch logic also remains the same
