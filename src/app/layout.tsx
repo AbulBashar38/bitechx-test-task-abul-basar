@@ -1,3 +1,4 @@
+import { Header } from "@/components/Header";
 import StoreProvider from "@/provider/StoreProvider";
 import { ThemeProvider } from "@/provider/ThemeProvider";
 import type { Metadata } from "next";
@@ -34,7 +35,12 @@ export default function RootLayout({
           forcedTheme="light"
           disableTransitionOnChange
         >
-          <StoreProvider> {children}</StoreProvider>
+          <StoreProvider>
+            <>
+              <Header />
+              <main className="min-h-screen">{children}</main>
+            </>
+          </StoreProvider>
         </ThemeProvider>
       </body>
     </html>
