@@ -12,6 +12,7 @@ import { Eye, Star } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
+import { getValidImageUrl } from "@/lib/utils";
 import { useState } from "react";
 import { Product } from "../page";
 
@@ -25,7 +26,7 @@ export function ProductCard({ product }: ProductCardProps) {
 
   return (
     <Card className="group relative overflow-hidden border-0 bg-white shadow-elegant transition-all duration-500 hover:shadow-elegant-lg animate-scale-in">
-      <div className="absolute inset-0 bg-gradient-to-br from-accent/5 via-transparent to-primary/5 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+      <div className="absolute inset-0 bg-gradient-to-br from-accent/5 via-transparent to-primary/5 opacity-0 transition-opacity duration-500 group-hover:opacity-100 pointer-events-none" />
 
       <CardHeader className="p-0">
         <div className="relative aspect-[4/5] overflow-hidden bg-gradient-to-br from-muted to-muted/50">
@@ -41,7 +42,7 @@ export function ProductCard({ product }: ProductCardProps) {
           </div>
 
           <Image
-            src={product.images || "/placeholder.jpg"}
+            src={getValidImageUrl(product.images?.[0]) || "/placeholder.jpg"}
             alt={product.name}
             fill
             className={`object-cover transition-all duration-700 ${
@@ -50,7 +51,7 @@ export function ProductCard({ product }: ProductCardProps) {
             onLoad={() => setImageLoaded(true)}
           />
 
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0 opacity-0 transition-opacity duration-500 group-hover:opacity-100 pointer-events-none" />
 
           <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full transition-transform duration-500 group-hover:translate-y-0">
             <div className="flex gap-2">
@@ -107,7 +108,7 @@ export function ProductCard({ product }: ProductCardProps) {
           <Button
             variant="outline"
             size="sm"
-            className="w-full font-medium transition-all hover:bg-secondary hover:text-secondary-foreground hover:border-secondary"
+            className="w-full font-medium transition-all hover:bg-secondary hover:text-secondary-foreground hover:border-secondary cursor-pointer"
           >
             <Eye className="mr-2 h-3.5 w-3.5" />
             View Details

@@ -33,3 +33,7 @@ export interface QueryType {
   categoryId?: string;
   searchedText?: string;
 }
+export interface mutationQueryType {
+  id: string;
+  body: CreateProductPayload;
+}

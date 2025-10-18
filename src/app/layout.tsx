@@ -1,5 +1,6 @@
 import { Header } from "@/components/Header";
 import { Toaster } from "@/components/ui/sonner";
+import PrivateRouteProvider from "@/provider/PrivateRouteProvider";
 import StoreProvider from "@/provider/StoreProvider";
 import { ThemeProvider } from "@/provider/ThemeProvider";
 import type { Metadata } from "next";
@@ -30,6 +31,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        suppressHydrationWarning
       >
         <ThemeProvider
           attribute="class"
@@ -37,11 +39,13 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <StoreProvider>
-            <>
-              <Header />
-              <main className="min-h-screen">{children}</main>
-              <Toaster />
-            </>
+            <PrivateRouteProvider>
+              <>
+                <Header />
+                <main className="min-h-screen">{children}</main>
+                <Toaster />
+              </>
+            </PrivateRouteProvider>
           </StoreProvider>
         </ThemeProvider>
       </body>

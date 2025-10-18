@@ -16,8 +16,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { ProductFormData, productSchema } from "@/lib/validations";
 import {
   useCreateProductMutation,
+  useEditProductMutation,
   useGetCategoriesQuery,
 } from "@/services/productApi";
+import { Product } from "@/type";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   DollarSign,
@@ -41,7 +43,7 @@ export function ProductForm({ product, mode }: ProductFormProps) {
   const { data: categories, isLoading: categoryLoading } =
     useGetCategoriesQuery({});
   const [createProduct, { isLoading }] = useCreateProductMutation();
-
+  const [editProduct, { isLoading: editLoading }] = useEditProductMutation();
   const {
     register,
     handleSubmit,
@@ -55,7 +57,7 @@ export function ProductForm({ product, mode }: ProductFormProps) {
           name: product.name,
           description: product.description,
           price: product.price,
-          categoryId: product.categoryId || "",
+          categoryId: product?.category.id || "",
           imageUrl: product.images[0] || "",
         }
       : undefined,
@@ -94,7 +96,11 @@ export function ProductForm({ product, mode }: ProductFormProps) {
         categoryId: data.categoryId,
       };
 
-      const res = await createProduct(productData).unwrap();
+      if (mode === "edit" && product) {
+        await editProduct({ id: product.id, body: productData }).unwrap();
+      } else {
+        await createProduct(productData).unwrap();
+      }
 
       toast.success(
         mode === "create"
@@ -274,7 +280,7 @@ export function ProductForm({ product, mode }: ProductFormProps) {
                   type="button"
                   variant="outline"
                   onClick={() => router.back()}
-                  disabled={isLoading}
+                  disabled={isLoading || editLoading}
                   size="lg"
                   className="flex-1 font-semibold"
                 >
@@ -282,11 +288,11 @@ export function ProductForm({ product, mode }: ProductFormProps) {
                 </Button>
                 <Button
                   type="submit"
-                  disabled={isLoading}
+                  disabled={isLoading || editLoading}
                   size="lg"
                   className="flex-1 bg-gradient-to-r from-accent to-primary hover:from-accent/90 hover:to-primary/90 shadow-lg transition-all hover:shadow-xl font-semibold"
                 >
-                  {isLoading && (
+                  {(isLoading || editLoading) && (
                     <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                   )}
                   {mode === "create" ? "Create Product" : "Update Product"}

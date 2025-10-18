@@ -3,9 +3,20 @@
 import { ErrorMessage } from "@/components/ErrorMessage";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { Button } from "@/components/ui/button";
-import { useGetProductsQuery } from "@/services/productApi";
-import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
-import { useEffect, useState } from "react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useDebounce } from "@/hooks/useDebounce";
+import {
+  useGetCategoriesQuery,
+  useGetProductsQuery,
+} from "@/services/productApi";
+import { ChevronLeft, ChevronRight, Filter, Sparkles } from "lucide-react";
+import { useState } from "react";
 import { ProductCard } from "./components/ProductCard";
 import { SearchBar } from "./components/SearchBar";
 
@@ -33,30 +44,34 @@ export type Product = {
 const ITEMS_PER_PAGE = 12;
 
 export default function ProductsPage() {
-  const {
-    data: allProducts,
-    isLoading,
-    error,
-  } = useGetProductsQuery({ offset: 5, limit: 10 });
-
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
-  useEffect(() => {
-    if (allProducts) {
-      const filtered = allProducts.filter((product) =>
-        product.name.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-      setFilteredProducts(filtered);
-      setCurrentPage(1);
-    }
-  }, [searchQuery, allProducts]);
+  // Debounced search function
+  const debouncedSearch = useDebounce((query: string) => {
+    setSearchQuery(query);
+    setCurrentPage(1); // Reset to first page when searching
+  }, 500);
 
-  const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const endIndex = startIndex + ITEMS_PER_PAGE;
-  const currentProducts = filteredProducts.slice(startIndex, endIndex);
+  const { data: categoryData, isLoading: categoryLoading } =
+    useGetCategoriesQuery({});
+
+  const {
+    data: productsData,
+    isLoading,
+    error,
+  } = useGetProductsQuery({
+    offset: (currentPage - 1) * ITEMS_PER_PAGE,
+    limit: ITEMS_PER_PAGE,
+    searchedText: searchQuery,
+    categoryId: selectedCategory === "all" ? "" : selectedCategory,
+  });
+  console.log(productsData);
+
+  const products = productsData || [];
+  const totalCount = productsData?.total || 0;
+  const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
 
   if (isLoading) {
     return (
@@ -89,20 +104,43 @@ export default function ProductsPage() {
                     Product Gallery
                   </h1>
                   <p className="mt-1 text-base text-muted-foreground">
-                    Discover our curated collection of{" "}
-                    {allProducts?.length || 0} premium products
+                    Discover our curated collection of {totalCount || 0} premium
+                    products
                   </p>
                 </div>
               </div>
             </div>
 
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-              <SearchBar value={searchQuery} onChange={setSearchQuery} />
+              <SearchBar
+                value={searchQuery}
+                onChange={debouncedSearch}
+                placeholder="Search products..."
+              />
+              <div className="flex items-center gap-2">
+                <Filter className="h-4 w-4 text-muted-foreground" />
+                <Select
+                  value={selectedCategory}
+                  onValueChange={setSelectedCategory}
+                >
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="All Categories" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Categories</SelectItem>
+                    {categoryData?.map((category) => (
+                      <SelectItem key={category.id} value={category.id}>
+                        {category.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
         </div>
 
-        {currentProducts.length === 0 ? (
+        {products.length === 0 ? (
           <div className="flex min-h-[50vh] items-center justify-center rounded-3xl border-2 border-dashed border-muted bg-muted/5 animate-fade-in">
             <div className="text-center">
               <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-muted">
@@ -110,8 +148,8 @@ export default function ProductsPage() {
               </div>
               <p className="text-2xl font-bold">No products found</p>
               <p className="mt-2 text-base text-muted-foreground">
-                {searchQuery
-                  ? "Try adjusting your search terms"
+                {searchQuery || selectedCategory
+                  ? "Try adjusting your search terms or filters"
                   : "No products available at the moment"}
               </p>
             </div>
@@ -119,7 +157,7 @@ export default function ProductsPage() {
         ) : (
           <>
             <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {currentProducts.map((product, index) => (
+              {products.map((product, index) => (
                 <div
                   key={product.id}
                   style={{
@@ -137,7 +175,7 @@ export default function ProductsPage() {
                   variant="outline"
                   size="lg"
                   onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  disabled={currentPage === 1}
+                  disabled={currentPage === 1 || isLoading}
                   className="font-semibold shadow-sm hover:shadow-md transition-all"
                 >
                   <ChevronLeft className="mr-2 h-5 w-5" />
@@ -161,6 +199,7 @@ export default function ProductsPage() {
                         variant={currentPage === page ? "default" : "outline"}
                         size="lg"
                         onClick={() => setCurrentPage(page)}
+                        disabled={isLoading}
                         className={`min-w-[3rem] font-semibold transition-all ${
                           currentPage === page
                             ? "bg-gradient-to-r from-accent to-primary shadow-md"
@@ -178,7 +217,7 @@ export default function ProductsPage() {
                   onClick={() =>
                     setCurrentPage((p) => Math.min(totalPages, p + 1))
                   }
-                  disabled={currentPage === totalPages}
+                  disabled={currentPage === totalPages || isLoading}
                   className="font-semibold shadow-sm hover:shadow-md transition-all"
                 >
                   Next

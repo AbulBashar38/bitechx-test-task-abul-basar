@@ -5,7 +5,11 @@ import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { useGetProductsBySlugQuery } from "@/services/productApi";
+import { getValidImageUrl } from "@/lib/utils";
+import {
+  useDeleteProductMutation,
+  useGetProductsBySlugQuery,
+} from "@/services/productApi";
 import {
   ArrowLeft,
   Calendar,
@@ -14,49 +18,46 @@ import {
   Pencil,
   Star,
   Tag,
+  Trash2,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
+import { DeleteConfirmModal } from "../components/DeleteConfirmModal";
 
 export default function ProductDetailsPage() {
   const params = useParams();
+  const router = useRouter();
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const {
     data: product,
     isLoading,
     error,
   } = useGetProductsBySlugQuery(params.id);
+  console.log(product);
 
-  // async function handleDelete() {
-  //   if (!product) return;
+  const [deleteProduct, { isLoading: deleteLoading }] =
+    useDeleteProductMutation();
 
-  //   try {
-  //     const { error: deleteError } = await supabase
-  //       .from("products")
-  //       .delete()
-  //       .eq("id", product.id);
+  async function handleDelete() {
+    if (!product) return;
 
-  //     if (deleteError) throw deleteError;
+    try {
+      await deleteProduct({ id: product.id, body: product }).unwrap();
 
-  //     toast({
-  //       title: "Success",
-  //       description: "Product deleted successfully",
-  //     });
+      toast.success("Product deleted successfully");
+      setDeleteModalOpen(false);
+      router.push("/products");
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to delete product"
+      );
+    }
+  }
 
-  //     router.push("/products");
-  //   } catch (err) {
-  //     toast({
-  //       title: "Error",
-  //       description:
-  //         err instanceof Error ? err.message : "Failed to delete product",
-  //       variant: "destructive",
-  //     });
-  //   } finally {
-  //     setDeleteModalOpen(false);
-  //   }
-  // }
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
         <LoadingSpinner size={48} />
@@ -95,8 +96,8 @@ export default function ProductDetailsPage() {
             <Card className="sticky top-24 overflow-hidden border-0 shadow-elegant-lg">
               <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-muted to-muted/50">
                 <Image
-                  src={product.images[0] || "/placeholder.jpg"}
-                  alt={product.name}
+                  src={getValidImageUrl(product?.images?.[0])}
+                  alt={product?.name}
                   fill
                   className="object-cover transition-transform duration-500 hover:scale-105"
                   priority
@@ -229,7 +230,7 @@ export default function ProductDetailsPage() {
             </Card>
 
             <div className="flex gap-4">
-              <Link href={`/products/${product.id}/edit`} className="flex-1">
+              <Link href={`/products/${product?.slug}/edit`} className="flex-1">
                 <Button
                   size="lg"
                   className="w-full bg-gradient-to-r from-secondary to-secondary/80 hover:from-secondary/90 hover:to-secondary/70 text-secondary-foreground shadow-lg transition-all hover:shadow-xl font-semibold text-base"
@@ -238,7 +239,7 @@ export default function ProductDetailsPage() {
                   Edit Product
                 </Button>
               </Link>
-              {/* <Button
+              <Button
                 size="lg"
                 variant="destructive"
                 onClick={() => setDeleteModalOpen(true)}
@@ -246,18 +247,19 @@ export default function ProductDetailsPage() {
               >
                 <Trash2 className="mr-2 h-5 w-5" />
                 Delete Product
-              </Button> */}
+              </Button>
             </div>
           </div>
         </div>
-
-        {/* <DeleteConfirmModal
-          open={deleteModalOpen}
-          onOpenChange={setDeleteModalOpen}
-          onConfirm={handleDelete}
-          productName={product.name}
-        /> */}
       </div>
+
+      <DeleteConfirmModal
+        open={deleteModalOpen}
+        onOpenChange={setDeleteModalOpen}
+        onConfirm={handleDelete}
+        productName={product?.name}
+        isLoading={deleteLoading}
+      />
     </div>
   );
 }

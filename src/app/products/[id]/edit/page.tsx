@@ -1,52 +1,20 @@
 "use client";
 
-import { useParams } from "next/navigation";
-import { useState } from "react";
-// import { supabase, Product } from '@/lib/supabase';
 import { ErrorMessage } from "@/components/ErrorMessage";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { useGetProductsBySlugQuery } from "@/services/productApi";
+import { useParams } from "next/navigation";
 import { ProductForm } from "../../components/ProductForm";
-import { DUMMY_PRODUCTS, Product } from "../../page";
 
 export default function EditProductPage() {
   const params = useParams();
-  const [product, setProduct] = useState<Product | null>(DUMMY_PRODUCTS[0]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    data: product,
+    isLoading,
+    error,
+  } = useGetProductsBySlugQuery(params.id);
 
-  // useEffect(() => {
-  //   if (params.id) {
-  //     fetchProduct(params.id as string);
-  //   }
-  // }, [params.id]);
-
-  // async function fetchProduct(id: string) {
-  //   try {
-  //     setLoading(true);
-  //     setError(null);
-
-  //     const { data, error: fetchError } = await supabase
-  //       .from('products')
-  //       .select('*')
-  //       .eq('id', id)
-  //       .maybeSingle();
-
-  //     if (fetchError) throw fetchError;
-
-  //     if (!data) {
-  //       setError('Product not found');
-  //       return;
-  //     }
-
-  //     setProduct(data);
-  //   } catch (err) {
-  //     setError(err instanceof Error ? err.message : 'Failed to fetch product');
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // }
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
         <LoadingSpinner size={48} />
@@ -58,7 +26,7 @@ export default function EditProductPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 py-10 flex flex-col justify-center items-center w-full">
         <div className="container">
-          <ErrorMessage message={error || "Product not found"} />
+          <ErrorMessage message={error?.message || "Product not found"} />
         </div>
       </div>
     );

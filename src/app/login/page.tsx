@@ -136,39 +136,8 @@ export default function LoginPage() {
                 </Button>
               </form>
             </Form>
-
-            <div className="mt-6 text-center">
-              <p className="text-sm text-muted-foreground">
-                By continuing, you agree to our{" "}
-                <a
-                  href="#"
-                  className="text-accent hover:text-accent/80 underline underline-offset-4"
-                >
-                  Terms of Service
-                </a>{" "}
-                and{" "}
-                <a
-                  href="#"
-                  className="text-accent hover:text-accent/80 underline underline-offset-4"
-                >
-                  Privacy Policy
-                </a>
-              </p>
-            </div>
           </CardContent>
         </Card>
-
-        <div className="text-center mt-6">
-          <p className="text-sm text-muted-foreground">
-            Don&apos;t have an account?{" "}
-            <a
-              href="#"
-              className="text-accent hover:text-accent/80 font-semibold underline underline-offset-4"
-            >
-              Sign up
-            </a>
-          </p>
-        </div>
       </div>
     </div>
   );

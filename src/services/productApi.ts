@@ -1,12 +1,15 @@
 import type {
   Category,
   CreateProductPayload,
+  mutationQueryType,
   Product,
   QueryType,
 } from "@/type";
 import apiConfig from "./apiConfig";
 import { ENDPOINT } from "./endpoint";
+
 const addTagTypes = ["product", "categories"];
+
 const productApi = apiConfig.enhanceEndpoints({ addTagTypes }).injectEndpoints({
   endpoints: (builder) => ({
     getProducts: builder.query<Product[], QueryType>({
@@ -21,6 +24,7 @@ const productApi = apiConfig.enhanceEndpoints({ addTagTypes }).injectEndpoints({
         url: `${ENDPOINT.PRODUCTS}/${slug}`,
       }),
     }),
+
     getCategories: builder.query<Category[], QueryType>({
       query: (params) => ({
         url: ENDPOINT.CATEGORIES,
@@ -32,6 +36,22 @@ const productApi = apiConfig.enhanceEndpoints({ addTagTypes }).injectEndpoints({
       query: (body) => ({
         url: ENDPOINT.PRODUCTS,
         method: "POST",
+        body,
+      }),
+      invalidatesTags: ["product"],
+    }),
+    editProduct: builder.mutation<Product, mutationQueryType>({
+      query: ({ id, body }) => ({
+        url: `${ENDPOINT.PRODUCTS}/${id}`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: ["product"],
+    }),
+    deleteProduct: builder.mutation<Product, mutationQueryType>({
+      query: ({ id, body }) => ({
+        url: `${ENDPOINT.PRODUCTS}/${id}`,
+        method: "DELETE",
         body,
       }),
       invalidatesTags: ["product"],
@@ -52,4 +72,6 @@ export const {
   useGetCategoriesQuery,
   useCreateProductMutation,
   useGetProductsBySlugQuery,
+  useDeleteProductMutation,
+  useEditProductMutation,
 } = productApi;
