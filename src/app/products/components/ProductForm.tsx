@@ -1,11 +1,5 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-// import { supabase, Category, Product } from '@/lib/supabase';
-import { ErrorMessage } from "@/components/ErrorMessage";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,6 +15,11 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { ProductFormData, productSchema } from "@/lib/validations";
 import {
+  useCreateProductMutation,
+  useGetCategoriesQuery,
+} from "@/services/productApi";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
   DollarSign,
   FileText,
   Image as ImageIcon,
@@ -28,6 +27,8 @@ import {
   Package,
   Tag,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 interface ProductFormProps {
@@ -37,10 +38,9 @@ interface ProductFormProps {
 
 export function ProductForm({ product, mode }: ProductFormProps) {
   const router = useRouter();
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { data: categories, isLoading: categoryLoading } =
+    useGetCategoriesQuery({});
+  const [createProduct, { isLoading }] = useCreateProductMutation();
 
   const {
     register,
@@ -55,13 +55,13 @@ export function ProductForm({ product, mode }: ProductFormProps) {
           name: product.name,
           description: product.description,
           price: product.price,
-          category_id: product.category_id || "",
+          categoryId: product.categoryId || "",
           imageUrl: product.images[0] || "",
         }
       : undefined,
   });
 
-  const categoryId = watch("category_id");
+  const categoryId = watch("categoryId");
 
   // useEffect(() => {
   //   fetchCategories();
@@ -84,77 +84,38 @@ export function ProductForm({ product, mode }: ProductFormProps) {
   //   }
   // }
 
-  function generateSlug(name: string): string {
-    return name
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/(^-|-$)/g, "");
-  }
-
   async function onSubmit(data: ProductFormData) {
     try {
-      setSubmitting(true);
-
-      const slug = generateSlug(data.name);
       const productData = {
         name: data.name,
-        slug,
         description: data.description,
-        price: data.price,
-        category_id: data.category_id,
         images: [data.imageUrl],
-        updated_at: new Date().toISOString(),
+        price: data.price,
+        categoryId: data.categoryId,
       };
 
-      if (mode === "create") {
-        const { error: insertError } = await supabase
-          .from("products")
-          .insert(productData);
+      const res = await createProduct(productData).unwrap();
 
-        if (insertError) throw insertError;
-
-        toast({
-          title: "Success",
-          description: "Product created successfully",
-        });
-      } else {
-        const { error: updateError } = await supabase
-          .from("products")
-          .update(productData)
-          .eq("id", product!.id);
-
-        if (updateError) throw updateError;
-
-        toast({
-          title: "Success",
-          description: "Product updated successfully",
-        });
-      }
+      toast.success(
+        mode === "create"
+          ? "Product created successfully"
+          : "Product updated successfully"
+      );
 
       router.push("/products");
-      router.refresh();
-    } catch (err) {
-      toast({
-        title: "Error",
-        description:
-          err instanceof Error ? err.message : `Failed to ${mode} product`,
-        variant: "destructive",
-      });
-    } finally {
-      setSubmitting(false);
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : `Failed to ${mode} product`
+      );
     }
   }
 
-  if (loading) {
+  if (categoryLoading) {
     return (
       <div className="flex min-h-[40vh] items-center justify-center">
         <LoadingSpinner size={48} />
       </div>
     );
-  }
-
-  if (error) {
-    return <ErrorMessage message={error} />;
   }
 
   return (
@@ -262,7 +223,7 @@ export function ProductForm({ product, mode }: ProductFormProps) {
                   </Label>
                   <Select
                     value={categoryId}
-                    onValueChange={(value) => setValue("category_id", value)}
+                    onValueChange={(value) => setValue("categoryId", value)}
                   >
                     <SelectTrigger className="h-12 text-base">
                       <SelectValue placeholder="Select a category" />
@@ -279,9 +240,9 @@ export function ProductForm({ product, mode }: ProductFormProps) {
                       ))}
                     </SelectContent>
                   </Select>
-                  {errors.category_id && (
+                  {errors.categoryId && (
                     <p className="flex items-center gap-1 text-sm font-medium text-destructive">
-                      {errors.category_id.message}
+                      {errors.categoryId.message}
                     </p>
                   )}
                 </div>
@@ -313,7 +274,7 @@ export function ProductForm({ product, mode }: ProductFormProps) {
                   type="button"
                   variant="outline"
                   onClick={() => router.back()}
-                  disabled={submitting}
+                  disabled={isLoading}
                   size="lg"
                   className="flex-1 font-semibold"
                 >
@@ -321,11 +282,11 @@ export function ProductForm({ product, mode }: ProductFormProps) {
                 </Button>
                 <Button
                   type="submit"
-                  disabled={submitting}
+                  disabled={isLoading}
                   size="lg"
                   className="flex-1 bg-gradient-to-r from-accent to-primary hover:from-accent/90 hover:to-primary/90 shadow-lg transition-all hover:shadow-xl font-semibold"
                 >
-                  {submitting && (
+                  {isLoading && (
                     <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                   )}
                   {mode === "create" ? "Create Product" : "Update Product"}

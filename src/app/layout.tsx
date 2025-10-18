@@ -1,4 +1,5 @@
 import { Header } from "@/components/Header";
+import { Toaster } from "@/components/ui/sonner";
 import StoreProvider from "@/provider/StoreProvider";
 import { ThemeProvider } from "@/provider/ThemeProvider";
 import type { Metadata } from "next";
@@ -39,6 +40,7 @@ export default function RootLayout({
             <>
               <Header />
               <main className="min-h-screen">{children}</main>
+              <Toaster />
             </>
           </StoreProvider>
         </ThemeProvider>

@@ -32,163 +32,33 @@ export type Product = {
 
 const ITEMS_PER_PAGE = 12;
 
-export const DUMMY_PRODUCTS: Product[] = [
-  {
-    category: {
-      createdAt: "2025-09-30T11:07:09.824206+00:00",
-      description: null,
-      id: "9c1129eb-cb7f-4c34-a94e-193a40f37a87",
-      image: "https://i.imgur.com/QkIa5tT.jpeg",
-      name: "Clothes",
-      updatedAt: "2025-09-30T11:07:09.824206+00:00",
-    },
-    createdAt: "2025-09-29T11:09:16.110463+00:00",
-    description: "test product description",
-    id: "0133b509-e436-4a14-b5c4-91b2a19aadc4",
-    images: ["https://laravelpoint.com/files/p_img.jpg"],
-    name: "test product 1133",
-    price: 1000,
-    slug: "test-product-1133",
-    updatedAt: "2025-09-30T11:09:16.110463+00:00",
-  },
-  {
-    category: {
-      createdAt: "2025-09-30T11:07:09.824206+00:00",
-      description: null,
-      id: "9c1129eb-cb7f-4c34-a94e-193a40f37a87",
-      image: "https://i.imgur.com/QkIa5tT.jpeg",
-      name: "Clothes",
-      updatedAt: "2025-09-30T11:07:09.824206+00:00",
-    },
-    createdAt: "2025-09-29T11:09:16.110463+00:00",
-    description: "test product description",
-    id: "0133b509-e436-4a14-b5c4-91b2a19aadc4",
-    images: ["https://laravelpoint.com/files/p_img.jpg"],
-    name: "test product 1133",
-    price: 1000,
-    slug: "test-product-1133",
-    updatedAt: "2025-09-30T11:09:16.110463+00:00",
-  },
-  {
-    category: {
-      createdAt: "2025-09-30T11:07:09.824206+00:00",
-      description: null,
-      id: "9c1129eb-cb7f-4c34-a94e-193a40f37a87",
-      image: "https://i.imgur.com/QkIa5tT.jpeg",
-      name: "Clothes",
-      updatedAt: "2025-09-30T11:07:09.824206+00:00",
-    },
-    createdAt: "2025-09-29T11:09:16.110463+00:00",
-    description: "test product description",
-    id: "0133b509-e436-4a14-b5c4-91b2a19aadc4",
-    images: ["https://laravelpoint.com/files/p_img.jpg"],
-    name: "test product 1133",
-    price: 1000,
-    slug: "test-product-1133",
-    updatedAt: "2025-09-30T11:09:16.110463+00:00",
-  },
-  {
-    category: {
-      createdAt: "2025-09-30T11:07:09.824206+00:00",
-      description: null,
-      id: "9c1129eb-cb7f-4c34-a94e-193a40f37a87",
-      image: "https://i.imgur.com/QkIa5tT.jpeg",
-      name: "Clothes",
-      updatedAt: "2025-09-30T11:07:09.824206+00:00",
-    },
-    createdAt: "2025-09-29T11:09:16.110463+00:00",
-    description: "test product description",
-    id: "0133b509-e436-4a14-b5c4-91b2a19aadc4",
-    images: ["https://laravelpoint.com/files/p_img.jpg"],
-    name: "test product 1133",
-    price: 1000,
-    slug: "test-product-1133",
-    updatedAt: "2025-09-30T11:09:16.110463+00:00",
-  },
-  {
-    category: {
-      createdAt: "2025-09-30T11:07:09.824206+00:00",
-      description: null,
-      id: "9c1129eb-cb7f-4c34-a94e-193a40f37a87",
-      image: "https://i.imgur.com/QkIa5tT.jpeg",
-      name: "Clothes",
-      updatedAt: "2025-09-30T11:07:09.824206+00:00",
-    },
-    createdAt: "2025-09-29T11:09:16.110463+00:00",
-    description: "test product description",
-    id: "0133b509-e436-4a14-b5c4-91b2a19aadc4",
-    images: ["https://laravelpoint.com/files/p_img.jpg"],
-    name: "test product 1133",
-    price: 1000,
-    slug: "test-product-1133",
-    updatedAt: "2025-09-30T11:09:16.110463+00:00",
-  },
-  {
-    category: {
-      createdAt: "2025-09-30T11:07:09.824206+00:00",
-      description: null,
-      id: "9c1129eb-cb7f-4c34-a94e-193a40f37a87",
-      image: "https://i.imgur.com/QkIa5tT.jpeg",
-      name: "Clothes",
-      updatedAt: "2025-09-30T11:07:09.824206+00:00",
-    },
-    createdAt: "2025-09-29T11:09:16.110463+00:00",
-    description: "test product description",
-    id: "0133b509-e436-4a14-b5c4-91b2a19aadc4",
-    images: ["https://laravelpoint.com/files/p_img.jpg"],
-    name: "test product 1133",
-    price: 1000,
-    slug: "test-product-1133",
-    updatedAt: "2025-09-30T11:09:16.110463+00:00",
-  },
-];
-
 export default function ProductsPage() {
-  const { data: allProducts } = useGetProductsQuery();
-  console.log({ allProducts });
+  const {
+    data: allProducts,
+    isLoading,
+    error,
+  } = useGetProductsQuery({ offset: 5, limit: 10 });
 
-  const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
-    fetchProducts();
-  }, []);
-
-  useEffect(() => {
-    const filtered = products.filter((product) =>
-      product.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-    setFilteredProducts(filtered);
-    setCurrentPage(1);
-  }, [searchQuery, products]);
-
-  function fetchProducts() {
-    try {
-      setLoading(true);
-      setError(null);
-
-      // Simulate API delay
-      setTimeout(() => {
-        setProducts(DUMMY_PRODUCTS);
-        setFilteredProducts(DUMMY_PRODUCTS);
-        setLoading(false);
-      }, 500);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch products");
-      setLoading(false);
+    if (allProducts) {
+      const filtered = allProducts.filter((product) =>
+        product.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setFilteredProducts(filtered);
+      setCurrentPage(1);
     }
-  }
+  }, [searchQuery, allProducts]);
 
   const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
   const currentProducts = filteredProducts.slice(startIndex, endIndex);
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
         <LoadingSpinner size={48} />
@@ -199,7 +69,7 @@ export default function ProductsPage() {
   if (error) {
     return (
       <div className="container py-8">
-        <ErrorMessage message={error} />
+        <ErrorMessage message="Failed to fetch products" />
       </div>
     );
   }
@@ -219,8 +89,8 @@ export default function ProductsPage() {
                     Product Gallery
                   </h1>
                   <p className="mt-1 text-base text-muted-foreground">
-                    Discover our curated collection of {filteredProducts.length}{" "}
-                    premium products
+                    Discover our curated collection of{" "}
+                    {allProducts?.length || 0} premium products
                   </p>
                 </div>
               </div>

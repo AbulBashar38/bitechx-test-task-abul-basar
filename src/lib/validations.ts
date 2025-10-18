@@ -13,7 +13,7 @@ export const productSchema = z.object({
     .number({ invalid_type_error: "Price must be a number" })
     .positive("Price must be greater than 0")
     .max(999999, "Price must be less than 1,000,000"),
-  category_id: z.string().min(1, "Category is required"),
+  categoryId: z.string().min(1, "Category is required"),
   imageUrl: z
     .string()
     .url("Must be a valid URL")

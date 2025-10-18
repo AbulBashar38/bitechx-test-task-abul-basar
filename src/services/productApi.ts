@@ -1,11 +1,29 @@
 import apiConfig from "./apiConfig";
 import { ENDPOINT } from "./endpoint";
-const addTagTypes = ["product"];
+const addTagTypes = ["product", "categories"];
 const productApi = apiConfig.enhanceEndpoints({ addTagTypes }).injectEndpoints({
   endpoints: (builder) => ({
     getProducts: builder.query({
-      query: () => ENDPOINT.PRODUCTS,
+      query: (params) => ({
+        url: ENDPOINT.PRODUCTS,
+        params,
+      }),
       providesTags: ["product"],
+    }),
+    getCategories: builder.query({
+      query: (params) => ({
+        url: ENDPOINT.CATEGORIES,
+        params,
+      }),
+      providesTags: ["categories"],
+    }),
+    createProduct: builder.mutation({
+      query: (body) => ({
+        url: ENDPOINT.PRODUCTS,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["product"],
     }),
     login: builder.mutation({
       query: (body) => ({
@@ -17,4 +35,9 @@ const productApi = apiConfig.enhanceEndpoints({ addTagTypes }).injectEndpoints({
   }),
 });
 
-export const { useGetProductsQuery, useLoginMutation } = productApi;
+export const {
+  useGetProductsQuery,
+  useLoginMutation,
+  useGetCategoriesQuery,
+  useCreateProductMutation,
+} = productApi;
