@@ -54,7 +54,7 @@ export function ProductCard({ product }: ProductCardProps) {
 
           <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full transition-transform duration-500 group-hover:translate-y-0">
             <div className="flex gap-2">
-              <Link href={`/products/${product.id}`} className="flex-1">
+              <Link href={`/products/${product.slug}`} className="flex-1">
                 <Button
                   variant="secondary"
                   className="w-full bg-white/95 backdrop-blur-sm hover:bg-white border-0 shadow-lg font-medium"
@@ -103,7 +103,7 @@ export function ProductCard({ product }: ProductCardProps) {
       </CardContent>
 
       <CardFooter className="flex gap-2 border-t bg-muted/30 p-4">
-        <Link href={`/products/${product.id}`} className="flex-1">
+        <Link href={`/products/${product.slug}`} className="flex-1">
           <Button
             variant="outline"
             size="sm"

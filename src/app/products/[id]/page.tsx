@@ -5,7 +5,7 @@ import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-// import { Product, supabase } from "@/lib/supabase";
+import { useGetProductsBySlugQuery } from "@/services/productApi";
 import {
   ArrowLeft,
   Calendar,
@@ -14,87 +14,47 @@ import {
   Pencil,
   Star,
   Tag,
-  Trash2,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
-import { useState } from "react";
-import { toast } from "sonner";
-import { DeleteConfirmModal } from "../components/DeleteConfirmModal";
-import { DUMMY_PRODUCTS, Product } from "../page";
+import { useParams } from "next/navigation";
 
 export default function ProductDetailsPage() {
   const params = useParams();
-  const router = useRouter();
-  const [product, setProduct] = useState<Product | null>(DUMMY_PRODUCTS[0]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const {
+    data: product,
+    isLoading,
+    error,
+  } = useGetProductsBySlugQuery(params.id);
 
-  // useEffect(() => {
-  //   if (params.id) {
-  //     fetchProduct(params.id as string);
-  //   }
-  // }, [params.id]);
+  // async function handleDelete() {
+  //   if (!product) return;
 
-  // async function fetchProduct(id: string) {
   //   try {
-  //     setLoading(true);
-  //     setError(null);
+  //     const { error: deleteError } = await supabase
+  //       .from("products")
+  //       .delete()
+  //       .eq("id", product.id);
 
-  //     const { data, error: fetchError } = await supabase
-  //       .from('products')
-  //       .select(`
-  //         *,
-  //         category:categories(*)
-  //       `)
-  //       .eq('id', id)
-  //       .maybeSingle();
+  //     if (deleteError) throw deleteError;
 
-  //     if (fetchError) throw fetchError;
+  //     toast({
+  //       title: "Success",
+  //       description: "Product deleted successfully",
+  //     });
 
-  //     if (!data) {
-  //       setError('Product not found');
-  //       return;
-  //     }
-
-  //     setProduct(data);
+  //     router.push("/products");
   //   } catch (err) {
-  //     setError(err instanceof Error ? err.message : 'Failed to fetch product');
+  //     toast({
+  //       title: "Error",
+  //       description:
+  //         err instanceof Error ? err.message : "Failed to delete product",
+  //       variant: "destructive",
+  //     });
   //   } finally {
-  //     setLoading(false);
+  //     setDeleteModalOpen(false);
   //   }
   // }
-
-  async function handleDelete() {
-    if (!product) return;
-
-    try {
-      const { error: deleteError } = await supabase
-        .from("products")
-        .delete()
-        .eq("id", product.id);
-
-      if (deleteError) throw deleteError;
-
-      toast({
-        title: "Success",
-        description: "Product deleted successfully",
-      });
-
-      router.push("/products");
-    } catch (err) {
-      toast({
-        title: "Error",
-        description:
-          err instanceof Error ? err.message : "Failed to delete product",
-        variant: "destructive",
-      });
-    } finally {
-      setDeleteModalOpen(false);
-    }
-  }
 
   if (loading) {
     return (
@@ -104,10 +64,10 @@ export default function ProductDetailsPage() {
     );
   }
 
-  if (error || !product) {
+  if (error) {
     return (
       <div className="container py-8">
-        <ErrorMessage message={error || "Product not found"} />
+        <ErrorMessage message="Failed to fetch product details" />
         <Link href="/products" className="mt-4 inline-block">
           <Button variant="outline">
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -135,7 +95,7 @@ export default function ProductDetailsPage() {
             <Card className="sticky top-24 overflow-hidden border-0 shadow-elegant-lg">
               <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-muted to-muted/50">
                 <Image
-                  src={product.images || "/placeholder.jpg"}
+                  src={product.images[0] || "/placeholder.jpg"}
                   alt={product.name}
                   fill
                   className="object-cover transition-transform duration-500 hover:scale-105"
@@ -278,7 +238,7 @@ export default function ProductDetailsPage() {
                   Edit Product
                 </Button>
               </Link>
-              <Button
+              {/* <Button
                 size="lg"
                 variant="destructive"
                 onClick={() => setDeleteModalOpen(true)}
@@ -286,17 +246,17 @@ export default function ProductDetailsPage() {
               >
                 <Trash2 className="mr-2 h-5 w-5" />
                 Delete Product
-              </Button>
+              </Button> */}
             </div>
           </div>
         </div>
 
-        <DeleteConfirmModal
+        {/* <DeleteConfirmModal
           open={deleteModalOpen}
           onOpenChange={setDeleteModalOpen}
           onConfirm={handleDelete}
           productName={product.name}
-        />
+        /> */}
       </div>
     </div>
   );
